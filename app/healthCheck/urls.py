@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.urls import path
-from healthstatus.views import health_check  # Adjust app name as necessary
+from healthstatus.views import health_check  
 
 urlpatterns = [
     path('health/', health_check, name='health_check'),
