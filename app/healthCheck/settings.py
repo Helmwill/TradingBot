@@ -16,7 +16,7 @@ with open(config_path, 'r') as config_file:
     config = yaml.safe_load(config_file)
 
 # Extract settings from YAML
-SECRET_KEY = config['SECRET_KEY']
+DJANGO_SECRET_KEY = config['DJANGO_SECRET_KEY']
 DEBUG = config['DEBUG']
 ALLOWED_HOSTS = config['ALLOWED_HOSTS']
 
