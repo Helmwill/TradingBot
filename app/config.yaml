@@ -1,5 +1,4 @@
-DJANGO_SECRET_KEY: "django-insecure-x)7w42zt&j^6zda_e_4^i7n0sk84t=m+bdqu%r4%km@j*qxd5="
-DEBUG: false
+DEBUG: true
 ALLOWED_HOSTS:
   - localhost
   - 127.0.0.1
@@ -9,4 +8,4 @@ INSTALLED_APPS:
 DATABASES:
   default:
     ENGINE: django.db.backends.sqlite3
-    NAME: /practice_route/app/db.sqlite3
+    NAME: db.sqlite3
