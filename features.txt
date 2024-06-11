@@ -1,0 +1,8 @@
+- create automatic trading routes
+-create manual buy route
+-create manual sell route
+-build test environment
+-build front end that displays:
+ -current prices in graph format
+ -historical prices in graph format
+ -total sum invested/total profit/loss
