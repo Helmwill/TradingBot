@@ -18,12 +18,12 @@ if not os.path.exists(env_file_path):
 
 environ.Env.read_env(env_file_path)
 
-# Check if DJANGO_SECRET_KEY is correctly read
+# Read environment variables
 try:
-    secret_key = env('DJANGO_SECRET_KEY')
-    print("DJANGO_SECRET_KEY:", secret_key)
+    SECRET_KEY = env('DJANGO_SECRET_KEY')
+    API_KEY = env('API_KEY')  # Add API_KEY here if needed
 except Exception as e:
-    print(f"Error reading DJANGO_SECRET_KEY: {e}")
+    print(f"Error reading environment variables: {e}")
     raise
 
 # Path to your YAML config file
@@ -47,10 +47,9 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework_simplejwt'
 ] + config['INSTALLED_APPS']
-
-# Extract settings from environment variables
-SECRET_KEY = secret_key
 
 # Database settings from YAML
 DATABASES = {
@@ -58,6 +57,11 @@ DATABASES = {
         'ENGINE': config['DATABASES']['default']['ENGINE'],
         'NAME': os.path.join(BASE_DIR, config['DATABASES']['default']['NAME']),
     }
+}
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
 }
 
 # Application definition
