@@ -1,9 +1,15 @@
-from django.shortcuts import render
 from django.http import JsonResponse
-import requests
-from django.conf import settings
 from datetime import datetime, timezone, timedelta
+import requests
+import json
+import logging
 from .models import HistoricalData
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from django.conf import settings
+
+logger = logging.getLogger(__name__)
 
 def health_check(request):
     return JsonResponse({"message": "Health check: status ok"}, status=200)
@@ -78,6 +84,7 @@ def coinbase_historical_data_view(request):
 
     return JsonResponse(historical_data, safe=False)
 
+  
 def current_prices_view(request):
     # Define the product IDs to fetch prices for
     products = ['BTC-USD', 'ETH-USD']
@@ -105,3 +112,92 @@ def current_prices_view(request):
             }
 
     return JsonResponse(current_prices, safe=False)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def sell_request(request):
+    try:
+        data = request.data
+        product_id = data.get('product_id')
+        amount = data.get('amount')
+
+        if not product_id or not amount:
+            logger.warning("Missing product_id or amount in sell request")
+            return Response({"error": "Missing product_id or amount"}, status=400)
+
+        response = execute_sell_order(product_id, amount)
+        logger.info(f"Executed sell order for {product_id} with amount {amount}")
+        return Response(response)
+    except requests.RequestException as e:
+        logger.error(f"Request error in sell_request: {e}")
+        return Response({"error": "Request to external API failed"}, status=500)
+    except Exception as e:
+        logger.error(f"Unexpected error in sell_request: {e}")
+        return Response({"error": str(e)}, status=500)
+
+def execute_sell_order(product_id, amount):
+    try:
+        url = 'https://api.pro.coinbase.com/orders'
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {settings.API_KEY}'
+        }
+        data = {
+            'type': 'market',
+            'side': 'sell',
+            'product_id': product_id,
+            'size': amount  # The amount of base currency to sell (e.g., BTC)
+        }
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        logger.error(f"Failed to execute sell order: {e}")
+        return {"error": str(e)}
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def buy_request(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            product_id = data.get('product_id')
+            amount = data.get('amount')
+
+            if not product_id or not amount:
+                logger.warning("Missing product_id or amount in buy request")
+                return JsonResponse({"error": "Missing product_id or amount"}, status=400)
+
+            response = execute_buy_order(product_id, amount)
+            logger.info(f"Executed buy order for {product_id} with amount {amount}")
+            return JsonResponse(response)
+        except requests.RequestException as e:
+            logger.error(f"Request error in buy_request: {e}")
+            return JsonResponse({"error": "Request to external API failed"}, status=500)
+        except Exception as e:
+            logger.error(f"Unexpected error in buy_request: {e}")
+            return JsonResponse({"error": str(e)}, status=500)
+
+    logger.error("Invalid request method in buy_request")
+    return JsonResponse({"error": "Invalid request method"}, status=405)
+
+def execute_buy_order(product_id, amount):
+    try:
+        url = 'https://api.pro.coinbase.com/orders'
+        headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {settings.API_KEY}'
+        }
+        data = {
+            'type': 'market',
+            'side': 'buy',
+            'product_id': product_id,
+            'funds': amount  # The amount of quote currency to use (e.g., USD)
+        }
+        response = requests.post(url, headers=headers, json=data)
+        response.raise_for_status()
+        return response.json()
+    except requests.RequestException as e:
+        logger.error(f"Failed to execute buy order: {e}")
+        return {"error": str(e)}
