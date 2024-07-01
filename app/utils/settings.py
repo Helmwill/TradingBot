@@ -91,7 +91,7 @@ TEMPLATES = [
     },
 ]
 
-ROOT_URLCONF = 'healthCheck.urls'
+ROOT_URLCONF = 'utils.urls'
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
