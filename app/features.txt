@@ -1,0 +1,30 @@
+- create automatic trading routes
+-build test environment
+    -tests/ directory for model, views and functionality tests
+    -test_env/ test environment for the tradingbot: ,mock data, trading strategy etc
+    -mock server/ to simulate api responses and url confirguration 
+-current prices in graph format
+-historical prices in graph format 
+-total sum invested/total profit/loss
+-create login to negate having to request tokens every trade           
+    -csrf trusted origins add in to settings with routes 
+
+    cors allowed origins add in to settings with route urls 
+
+    TokenObtainPairView.
+
+
+integrate ci cd pipleine - 
+circle ci 
+docker 
+
+deploy api to server 
+
+-current prices in graph format
+-historical prices in graph format 
+
+
+
+linkedin easy apply - 
+contact the hiring manager or someone at company. 
+

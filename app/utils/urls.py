@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
-from healthstatus.views import health_check, coinbase_historical_data_view, current_prices_view, buy_request, sell_request
+from trading.views import health_check, coinbase_historical_data_view, current_prices_view, buy_request, sell_request
 
 urlpatterns = [
     path('health/', health_check, name='health_check'),
