@@ -1,5 +1,5 @@
 """
-ASGI config for healthCheck project.
+ASGI config for trading bot project.
 
 It exposes the ASGI callable as a module-level variable named ``application``.
 

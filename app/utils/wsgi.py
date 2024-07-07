@@ -1,5 +1,5 @@
 """
-WSGI config for healthCheck project.
+WSGI config for trading bot project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 

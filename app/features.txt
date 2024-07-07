@@ -7,8 +7,7 @@
 -historical prices in graph format 
 -total sum invested/total profit/loss
 -create login to negate having to request tokens every trade           
-    -csrf trusted origins add in to settings with routes 
-
+   
     cors allowed origins add in to settings with route urls 
 
     TokenObtainPairView.
@@ -27,4 +26,3 @@ deploy api to server
 
 linkedin easy apply - 
 contact the hiring manager or someone at company. 
-
