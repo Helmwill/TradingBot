@@ -1,7 +1,7 @@
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView,TokenRefreshView
-from healthstatus.views import health_check, coinbase_historical_data_view, current_prices_view, buy_request, sell_request
+from trading.views import health_check, coinbase_historical_data_view, current_prices_view, buy_request, sell_request
 
 urlpatterns = [
     path('health/', health_check, name='health_check'),
@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('buy/', buy_request, name='buy_request'),
     path('sell/', sell_request, name='sell_request'),
+    path('mock/', include('mock_server.urls')),
 ]
 
 
