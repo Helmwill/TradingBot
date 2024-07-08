@@ -3,8 +3,8 @@ ALLOWED_HOSTS:
   - localhost
   - 127.0.0.1
 INSTALLED_APPS:
-  - healthCheck
-  - healthstatus
+  - utils
+  - trading
 DATABASES:
   default:
     ENGINE: django.db.backends.sqlite3

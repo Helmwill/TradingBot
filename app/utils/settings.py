@@ -1,6 +1,8 @@
+from datetime import timedelta
 import os
 import environ
 import yaml
+from pathlib import Path
 
 # Define BASE_DIR to point to the 'app' directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -9,7 +11,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 env = environ.Env()
 
 # Reading .env file (ensure this is after BASE_DIR definition)
-env_file_path = os.path.join(BASE_DIR, '..', 'secure_keys.env')
+env_file_path = os.path.join(BASE_DIR, 'test_env/config/.env')
 print("Reading .env file from:", env_file_path)
 
 # Ensure the .env file path is correct by checking its existence
@@ -21,7 +23,9 @@ environ.Env.read_env(env_file_path)
 # Read environment variables
 try:
     SECRET_KEY = env('DJANGO_SECRET_KEY')
-    API_KEY = env('API_KEY')  # Add API_KEY here if needed
+    COINBASE_API_KEY_SANDBOX = env('API_KEY_SANDBOX')
+    COINBASE_API_SECRET_SANDBOX = env('API_SECRET_SANDBOX')
+    COINBASE_API_PASSPHRASE_SANDBOX = env('API_PASSPHRASE_SANDBOX')
 except Exception as e:
     print(f"Error reading environment variables: {e}")
     raise
@@ -37,7 +41,6 @@ if not os.path.exists(config_path):
 with open(config_path, 'r') as config_file:
     config = yaml.safe_load(config_file)
 
-# Extract settings from YAML
 DEBUG = config['DEBUG']
 ALLOWED_HOSTS = config['ALLOWED_HOSTS']
 INSTALLED_APPS = [
@@ -48,23 +51,41 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework_simplejwt'
+    'rest_framework_simplejwt',
+    # Add your other apps here
 ] + config['INSTALLED_APPS']
 
-# Database settings from YAML
 DATABASES = {
     'default': {
         'ENGINE': config['DATABASES']['default']['ENGINE'],
         'NAME': os.path.join(BASE_DIR, config['DATABASES']['default']['NAME']),
     }
 }
+
+# Determine the environment to use
+DJANGO_ENV = env('ENVIRONMENT', default='development')
+
+if DJANGO_ENV == 'development':
+    COINBASE_API_URL = 'https://api.pro.coinbase.com'
+elif DJANGO_ENV == 'test':
+    COINBASE_API_URL = 'https://api-public.sandbox.pro.coinbase.com'
+    COINBASE_API_KEY = COINBASE_API_KEY_SANDBOX
+    COINBASE_API_SECRET = COINBASE_API_SECRET_SANDBOX
+    COINBASE_API_PASSPHRASE = COINBASE_API_PASSPHRASE_SANDBOX
+
+# JWT Configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
 }
 
-# Application definition
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
+
+# Middleware configuration
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -75,6 +96,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# TEMPLATES configuration
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -91,7 +113,25 @@ TEMPLATES = [
     },
 ]
 
-ROOT_URLCONF = 'healthCheck.urls'
+# Logging configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'file': {
+            'level': 'DEBUG',
+            'class': 'logging.FileHandler',
+            'filename': os.path.join(BASE_DIR, 'test_env/logs/debug.log'),
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
