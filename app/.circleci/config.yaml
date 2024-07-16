@@ -13,6 +13,11 @@ jobs:
             . venv/bin/activate
             pip install -r requirements.txt
       - run:
+          name: Run migrations
+          command: |
+            . venv/bin/activate
+            python manage.py migrate
+      - run:
           name: Run tests
           command: |
             . venv/bin/activate
