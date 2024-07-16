@@ -26,3 +26,15 @@ deploy api to server
 
 linkedin easy apply - 
 contact the hiring manager or someone at company. 
+
+
+
+test the bot before deploying 
+creat account circle ci conect github
+create sample file circle ci folder in repo 
+create job for anything that you can test in terminal.
+cookiecutter repo.
+
+use coverage to check amount of code that is in test area. 
+
+DJANGO_SETTINGS_MODULE=myproject.test_settings python manage.py test

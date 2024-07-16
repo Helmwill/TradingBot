@@ -3,6 +3,10 @@ import os
 import environ
 import yaml
 from pathlib import Path
+import pymysql
+
+# Install pymysql as MySQLdb
+pymysql.install_as_MySQLdb()
 
 # Define BASE_DIR to point to the 'app' directory
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -11,7 +15,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 env = environ.Env()
 
 # Reading .env file (ensure this is after BASE_DIR definition)
-env_file_path = os.path.join(BASE_DIR, 'test_env/config/.env')
+env_file_path = os.path.join(BASE_DIR, 'secure_keys.env')
 print("Reading .env file from:", env_file_path)
 
 # Ensure the .env file path is correct by checking its existence
@@ -57,8 +61,15 @@ INSTALLED_APPS = [
 
 DATABASES = {
     'default': {
-        'ENGINE': config['DATABASES']['default']['ENGINE'],
-        'NAME': os.path.join(BASE_DIR, config['DATABASES']['default']['NAME']),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': env('RDS_DB_NAME'),
+        'USER': env('RDS_DB_USER'),
+        'PASSWORD': env('RDS_DB_PASSWORD'),
+        'HOST': env('RDS_DB_HOST'),
+        'PORT': env('RDS_DB_PORT', default='3306'),
+        'OPTIONS': {
+            'connect_timeout': 30,
+        }
     }
 }
 
