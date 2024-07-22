@@ -1,15 +1,33 @@
 version: 2.1
 
-jobs:
-  build:
+executors:
+  python-executor:
     docker:
       - image: circleci/python:3.11
+    working_directory: ~/repo
+
+jobs:
+  build:
+    executor: python-executor
     steps:
       - checkout
       - run:
-          name: Install dependencies
+          name: Install system dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y build-essential libssl-dev libffi-dev python3-dev default-libmysqlclient-dev
+      - run:
+          name: Set up virtual environment
           command: |
             python -m venv venv
+      - run:
+          name: Upgrade pip
+          command: |
+            . venv/bin/activate
+            pip install --upgrade pip
+      - run:
+          name: Install dependencies
+          command: |
             . venv/bin/activate
             pip install -r requirements.txt
       - run:
