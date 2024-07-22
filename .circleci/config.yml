@@ -8,9 +8,12 @@ jobs:
       - checkout
       - run:
           name: Echo this is a test
-          command: echo "This is a test"
+          command: echo $RDS_NAME
 
 workflows:
   build_and_test:
     jobs:
       - build
+        context: aws_dev
+
+  
