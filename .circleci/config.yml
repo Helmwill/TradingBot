@@ -7,8 +7,17 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Echo this is a test
-          command: echo $RDS_NAME
+          name: set up virtual environment
+          command: 
+          python -m venv venv
+          . venv/bin/activate
+          pip install --upgrade pip
+          pip install -r requirements.txt
+      - run:
+          name: Run migrations
+          command: 
+          . venv/bin/activate
+          python manage.py migrate
 
 workflows:
   build_and_test:
