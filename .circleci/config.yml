@@ -7,16 +7,27 @@ jobs:
     steps:
       - checkout
       - run:
-          name: set up virtual environment
+          name: Verify directory structure at the root level
+          command: ls -l
+      - run:
+          name: Set up virtual environment and install dependencies
           command: |
+            cd practice_route
             python -m venv venv
             . venv/bin/activate
             pip install --upgrade pip
             pip install -r requirements.txt
       - run:
+          name: Verify virtual environment setup
+          command: |
+            cd practice_route
+            . venv/bin/activate
+            pip list
+      - run:
           name: Run migrations
           command: |
-            . venv/bin/activate
+            cd practice_route/app
+            . ../venv/bin/activate
             python manage.py migrate
 
 workflows:
@@ -24,5 +35,3 @@ workflows:
     jobs:
       - build:
           context: aws_dev
-
-  
