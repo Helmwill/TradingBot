@@ -10,12 +10,13 @@ pymysql.install_as_MySQLdb()
 
 # Define BASE_DIR to point to the root directory of the project
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-APP_DIR = os.path.join(BASE_DIR)
+# Define APP_DIR to point to the 'app' directory within the project
+APP_DIR = os.path.join(BASE_DIR, 'app')
 
-# Initialize environment variable
+# Initialize environment variables
 env = environ.Env()
 
-# Reading .env file (ensure this is after BASE_DIR definition)
+# Reading .env file (ensure this is after APP_DIR definition)
 env_file_path = os.path.join(APP_DIR, 'secure_keys.env')
 print("Reading .env file from:", env_file_path)
 
