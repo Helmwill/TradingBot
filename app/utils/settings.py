@@ -22,7 +22,7 @@ print("Reading .env file from:", env_file_path)
 if not os.path.exists(env_file_path):
     raise FileNotFoundError(f"Expected .env file at {env_file_path}")
 
-environ.Env.read_env(env_file_path
+environ.Env.read_env(env_file_path)
 # Read environment variables
 try:
     SECRET_KEY = env('DJANGO_SECRET_KEY')
