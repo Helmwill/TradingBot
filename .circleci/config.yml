@@ -7,12 +7,15 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Print working directory
+          command: |
+            echo "Current working directory:"
+            pwd
+      - run:
           name: List directory contents after checkout
           command: |
             echo "Listing contents of the working directory:"
             ls -al
-            echo "Listing contents of the practice_route directory (if it exists):"
-            ls -al practice_route || echo "practice_route does not exist"
       - run:
           name: Set up virtual environment
           command: |
@@ -24,8 +27,8 @@ jobs:
       - run:
           name: Run migrations
           command: |
-            cd app
-            . ../practice_route/venv/bin/activate
+            cd practice_route/app
+            . ../venv/bin/activate
             python manage.py migrate
 
 workflows:
