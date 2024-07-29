@@ -1,20 +1,20 @@
 version: 2.1
 
+orbs:
+  aws-rds: ware2go/aws-rds@1.0.0
+
 jobs:
   build:
     docker:
       - image: cimg/python:3.11
     steps:
       - checkout
-      - run:
-          name: Print working directory and list contents
-          command: |
-            echo "Current working directory:"
-            pwd
-            echo "Listing contents of the working directory:"
-            ls -al
-            echo "Listing contents of the app directory:"
-            ls -al app
+      - aws-rds/start:
+          rds-instance-identifier: "revbot"
+          aws-region: "eu-north-1b"
+          db-name: "revbot"
+          db-username: "Helmwill"
+          db-password: "Tradingbot9"
       - run:
           name: Set up virtual environment
           command: |
@@ -25,12 +25,10 @@ jobs:
       - run:
           name: Run migrations
           command: |
-            cd app
-            . ../venv/bin/activate
+            . venv/bin/activate
             python manage.py migrate
 
 workflows:
   build_and_test:
     jobs:
-      - build:
-          context: aws_dev
+      - build
