@@ -9,16 +9,16 @@ jobs:
       - run:
           name: Set up virtual environment
           command: |
-            cd practice_route
+            cd app
             python -m venv venv
             . venv/bin/activate
             pip install --upgrade pip
-            pip install -r requirements.txt
+            pip install -r ../practice_route/requirements.txt
       - run:
           name: Run migrations
           command: |
-            cd practice_route/app
-            . ../venv/bin/activate
+            cd app
+            . venv/bin/activate
             python manage.py migrate
 
 workflows:
