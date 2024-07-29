@@ -127,7 +127,7 @@ TEMPLATES = [
 # Logging configuration
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable existing loggers': False,
     'handlers': {
         'file': {
             'level': 'DEBUG',
