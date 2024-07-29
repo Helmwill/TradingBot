@@ -7,16 +7,22 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Set up virtual environment and install dependencies
+          name: set up virtual environment
           command: |
+            cd practice_route
             python -m venv venv
             . venv/bin/activate
             pip install --upgrade pip
             pip install -r requirements.txt
       - run:
+          name: Set environment variables
+          command: |
+            cd practice_route
+            export $(grep -v '^#' secure_keys.env | xargs)
+      - run:
           name: Run migrations
           command: |
-            cd app
+            cd practice_route/app
             . ../venv/bin/activate
             python manage.py migrate
 
