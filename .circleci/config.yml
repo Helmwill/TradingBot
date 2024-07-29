@@ -13,12 +13,11 @@ jobs:
             pwd
             echo "Listing contents of the working directory:"
             ls -al
+            echo "Listing contents of the app directory:"
+            ls -al app
       - run:
           name: Set up virtual environment
           command: |
-            if [ -d "practice_route" ]; then
-              cd practice_route
-            fi
             python -m venv venv
             . venv/bin/activate
             pip install --upgrade pip
@@ -26,11 +25,7 @@ jobs:
       - run:
           name: Run migrations
           command: |
-            if [ -d "practice_route" ]; then
-              cd practice_route/app
-            else
-              cd app
-            fi
+            cd app
             . ../venv/bin/activate
             python manage.py migrate
 
