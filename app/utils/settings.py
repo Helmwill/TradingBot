@@ -15,7 +15,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 env = environ.Env()
 
 # Reading .env file (ensure this is after BASE_DIR definition)
-env_file_path = os.path.join(BASE_DIR, 'app', 'secure_keys.env')
+env_file_path = os.path.join(BASE_DIR, 'secure_keys.env')
 print("Reading .env file from:", env_file_path)
 
 # Ensure the .env file path is correct by checking its existence
