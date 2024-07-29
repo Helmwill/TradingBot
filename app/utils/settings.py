@@ -15,14 +15,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 env = environ.Env()
 
 # Reading .env file (ensure this is after BASE_DIR definition)
-env_file_path = os.path.join(BASE_DIR, 'secure_keys.env')
-print(f"Reading .env file from: {env_file_path}")
-
-# Ensure the .env file path is correct by checking its existence
-if not os.path.exists(env_file_path):
-    raise FileNotFoundError(f"Expected .env file at {env_file_path}")
-
-environ.Env.read_env(env_file_path)
+env_file_path = os.path.join(BASE_DIR, 'app', 'secure_keys.env')
+if os.path.exists(env_file_path):
+    environ.Env.read_env(env_file_path)
+else:
+    print(f"Expected .env file at {env_file_path} not found, using environment variables set in CI/CD.")
 
 # Read environment variables
 try:
@@ -127,7 +124,7 @@ TEMPLATES = [
 # Logging configuration
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing loggers': False,
     'handlers': {
         'file': {
             'level': 'DEBUG',
