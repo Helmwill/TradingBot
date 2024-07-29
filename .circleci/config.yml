@@ -16,7 +16,6 @@ jobs:
       - run:
           name: Set up virtual environment
           command: |
-            cd practice_route
             python -m venv venv
             . venv/bin/activate
             pip install --upgrade pip
