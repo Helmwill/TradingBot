@@ -10,7 +10,7 @@ pymysql.install_as_MySQLdb()
 
 # Define BASE_DIR to point to the root directory of the project
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-APP_DIR = os.path.join(BASE_DIR, 'app')
+APP_DIR = os.path.join(BASE_DIR)
 
 # Initialize environment variable
 env = environ.Env()
