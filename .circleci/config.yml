@@ -24,8 +24,8 @@ jobs:
       - run:
           name: Run migrations
           command: |
-            cd practice_route/app
-            . ../venv/bin/activate
+            cd app
+            . ../practice_route/venv/bin/activate
             python manage.py migrate
 
 workflows:
