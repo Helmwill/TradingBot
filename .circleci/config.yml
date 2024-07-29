@@ -7,19 +7,8 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Print working directory
-          command: |
-            echo "Current working directory:"
-            pwd
-      - run:
-          name: List directory contents after checkout
-          command: |
-            echo "Listing contents of the working directory:"
-            ls -al
-      - run:
           name: Set up virtual environment
           command: |
-            cd practice_route
             python -m venv venv
             . venv/bin/activate
             pip install --upgrade pip
