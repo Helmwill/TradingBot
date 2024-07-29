@@ -16,6 +16,9 @@ jobs:
       - run:
           name: Set up virtual environment
           command: |
+            if [ -d "practice_route" ]; then
+              cd practice_route
+            fi
             python -m venv venv
             . venv/bin/activate
             pip install --upgrade pip
@@ -23,7 +26,11 @@ jobs:
       - run:
           name: Run migrations
           command: |
-            cd app
+            if [ -d "practice_route" ]; then
+              cd practice_route/app
+            else
+              cd app
+            fi
             . ../venv/bin/activate
             python manage.py migrate
 
