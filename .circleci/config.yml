@@ -1,7 +1,8 @@
 version: 2.1
 
 orbs:
-  aws-rds: ware2go/aws-rds@1.0.0
+  aws-s3: circleci/aws-s3@4.0.0
+  aws-cli: circleci/aws-cli@3.1.3
 
 jobs:
   build:
@@ -9,12 +10,11 @@ jobs:
       - image: cimg/python:3.11
     steps:
       - checkout
-      - aws-rds/start:
-          rds-instance-identifier: "revbot"
-          aws-region: "eu-north-1b"
-          db-name: "revbot"
-          db-username: "Helmwill"
-          db-password: "Tradingbot9"
+      - aws-cli/setup:
+          profile-name: aws-rds-profile
+      - run:
+          name: Print AWS CLI version
+          command: aws --version
       - run:
           name: Set up virtual environment
           command: |
