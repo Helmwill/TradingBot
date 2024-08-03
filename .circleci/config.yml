@@ -31,5 +31,5 @@ jobs:
 workflows:
   build_and_test:
     jobs:
-      - build
-          context: aws_dev
+      - build:
+          context: aws_dev  # Ensure this is properly aligned
