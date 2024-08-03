@@ -59,11 +59,11 @@ INSTALLED_APPS = [
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': env('RDS_DB_NAME'),
-        'USER': env('RDS_DB_USER'),
-        'PASSWORD': env('RDS_DB_PASSWORD'),
-        'HOST': env('RDS_DB_HOST'),
-        'PORT': env('RDS_DB_PORT', default='3306'),
+        'NAME': env('AWS_DB_NAME'),
+        'USER': env('AWS_DB_USER'),
+        'PASSWORD': env('AWS_DB_PASSWORD'),
+        'HOST': env('AWS_DB_HOST'),
+        'PORT': env('AWS_DB_PORT', default='3306'),
         'OPTIONS': {
             'connect_timeout': 30,
         }
