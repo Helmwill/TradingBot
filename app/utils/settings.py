@@ -65,7 +65,7 @@ DATABASES = {
         'HOST': env('AWS_DB_HOST'),
         'PORT': env('AWS_DB_PORT', default='3306'),
         'OPTIONS': {
-            'connect_timeout': 30,
+            'connect_timeout': 300,
         }
     }
 }
