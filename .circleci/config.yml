@@ -18,6 +18,7 @@ jobs:
       - run:
           name: Set up virtual environment
           command: |
+            cd practice_route 
             python -m venv venv
             . venv/bin/activate
             pip install --upgrade pip
@@ -25,8 +26,38 @@ jobs:
       - run:
           name: Run migrations
           command: |
+            cd practice_route/app  
+            . ../venv/bin/activate  
+            python manage.py migrate
+workflows:
+  build_and_test:
+    jobs:
+      - build:
+          context: aws_dev
+
+
+
+version: 2.1
+
+jobs:
+  build:
+    docker:
+      - image: cimg/python:3.11
+    steps:
+      - checkout
+      - run:
+          name: Set up virtual environment
+          command: |
+            cd practice_route  # Change to the correct directory where requirements.txt is located
+            python -m venv venv
             . venv/bin/activate
-            cd practice_route/app
+            pip install --upgrade pip
+            pip install -r requirements.txt
+      - run:
+          name: Run migrations
+          command: |
+            cd practice_route/app  # Change to the app directory where manage.py is located
+            . ../venv/bin/activate  # Activate the virtual environment from the practice_route directory
             python manage.py migrate
 
 workflows:
