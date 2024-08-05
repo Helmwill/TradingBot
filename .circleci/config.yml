@@ -18,8 +18,7 @@ jobs:
           command: aws --version
       - run:
           name: Set up virtual environment
-          command: |
-            cd practice_route 
+          command: | 
             python -m venv venv
             . venv/bin/activate
             pip install --upgrade pip
