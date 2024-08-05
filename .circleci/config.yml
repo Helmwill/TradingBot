@@ -16,25 +16,17 @@ jobs:
           name: Print AWS CLI version
           command: aws --version
       - run:
-          name: Verify Directory Structure
-          command: |
-            echo "Current Directory: $(pwd)"
-            echo "Contents of Current Directory:"
-            ls -l
-            echo "Contents of app directory:"
-            ls -l app
-      - run:
           name: Set up virtual environment
-          command: |
+          command: | 
             python -m venv venv
             . venv/bin/activate
             pip install --upgrade pip
-            pip install -r practice_route/requirements.txt
+            pip install -r requirements.txt
       - run:
           name: Run migrations
-          command: |
+          command: | 
             . venv/bin/activate
-            python practice_route/app/manage.py migrate
+            python app/manage.py migrate
 
 workflows:
   build_and_test:
