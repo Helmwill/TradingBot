@@ -26,8 +26,6 @@ jobs:
       - run:
           name: Run migrations
           command: | 
-            . /venv/bin/activate
-            cd app
             python manage.py migrate
 workflows:
   build_and_test:
