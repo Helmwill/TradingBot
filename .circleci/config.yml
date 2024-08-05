@@ -26,7 +26,7 @@ jobs:
           name: Run migrations
           command: |
             . venv/bin/activate
-            cd app
+            cd practice_rpute/app
             python manage.py migrate
 
 workflows:
