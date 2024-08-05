@@ -1,6 +1,5 @@
 version: 2.1
 
-
 orbs:
   aws-s3: circleci/aws-s3@4.0.0
   aws-cli: circleci/aws-cli@3.1.3
@@ -17,16 +16,26 @@ jobs:
           name: Print AWS CLI version
           command: aws --version
       - run:
+          name: Verify Directory Structure
+          command: |
+            echo "Current Directory: $(pwd)"
+            echo "Contents of Current Directory:"
+            ls -l
+            echo "Contents of app directory:"
+            ls -l app
+      - run:
           name: Set up virtual environment
-          command: | 
+          command: |
             python -m venv venv
             . venv/bin/activate
             pip install --upgrade pip
-            pip install -r requirements.txt
+            pip install -r practice_route/requirements.txt
       - run:
           name: Run migrations
-          command: | 
-            python manage.py migrate
+          command: |
+            . venv/bin/activate
+            python practice_route/app/manage.py migrate
+
 workflows:
   build_and_test:
     jobs:
