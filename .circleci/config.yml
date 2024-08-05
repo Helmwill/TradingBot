@@ -11,19 +11,23 @@ jobs:
       - image: cimg/python:3.11
     steps:
       - checkout
+      - aws-cli/setup:
+          profile-name: aws-rds-profile
+      - run:
+          name: Print AWS CLI version
+          command: aws --version
       - run:
           name: Set up virtual environment
-          command: |
-            python -m venv /practice_route/venv
-            . /practice_route/venv/bin/activate
+          command: | 
+            python -m venv venv
+            . venv/bin/activate
             pip install --upgrade pip
-            pip install -r /practice_route/requirements.txt
+            pip install -r requirements.txt
       - run:
           name: Run migrations
-          command: |
-            . /practice_route/venv/bin/activate
-            python /practice_route/app/manage.py migrate
-
+          command: | 
+            . ../venv/bin/activate  
+            python manage.py migrate
 workflows:
   build_and_test:
     jobs:
