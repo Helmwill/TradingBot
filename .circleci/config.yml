@@ -14,15 +14,15 @@ jobs:
       - run:
           name: Set up virtual environment
           command: |
-            python -m venv /home/circleci/project/practice_route/venv
-            . /home/circleci/project/practice_route/venv/bin/activate
+            python -m venv /project/practice_route/venv
+            . /project/practice_route/venv/bin/activate
             pip install --upgrade pip
-            pip install -r /home/circleci/project/practice_route/requirements.txt
+            pip install -r project/practice_route/requirements.txt
       - run:
           name: Run migrations
           command: |
-            . /home/circleci/project/practice_route/venv/bin/activate
-            python /home/circleci/project/practice_route/app/manage.py migrate
+            . /project/practice_route/venv/bin/activate
+            python /project/practice_route/app/manage.py migrate
 
 workflows:
   build_and_test:
