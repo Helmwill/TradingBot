@@ -1,7 +1,6 @@
 version: 2.1
 
 orbs:
-  aws-s3: circleci/aws-s3@4.0.0
   aws-cli: circleci/aws-cli@3.1.3
 
 jobs:
@@ -26,6 +25,7 @@ jobs:
           name: Run migrations
           command: | 
             . venv/bin/activate
+            echo $AWS_DB_PASSWORD
             python app/manage.py migrate
 
 workflows:
