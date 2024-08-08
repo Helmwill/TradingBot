@@ -24,14 +24,67 @@ def health_check(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def coinbase_historical_data_view(request):
-    # Your existing code
-    ...
+    product_id = request.GET.get('product_id')
+    if not product_id:
+        logger.warning("Missing product_id in historical data request")
+        return JsonResponse({"error": "Missing product_id"}, status=400)
+
+    # Set the granularity for the historical data (e.g., 300 for 5-minute candles)
+    granularity = request.GET.get('granularity', '300')
+
+    try:
+        url = f'https://api.pro.coinbase.com/products/{product_id}/candles?granularity={granularity}'
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        # Format the response to a readable format
+        formatted_data = [
+            {
+                "time": candle[0],
+                "low": candle[1],
+                "high": candle[2],
+                "open": candle[3],
+                "close": candle[4],
+                "volume": candle[5],
+            }
+            for candle in data
+        ]
+        return JsonResponse(formatted_data, safe=False)
+    except requests.RequestException as e:
+        logger.error(f"Failed to fetch historical data: {e}")
+        return JsonResponse({"error": "Failed to fetch historical data"}, status=500)
+
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def current_prices_view(request):
-    # Your existing code
-    ...
+    """
+    Fetch the current price for a given product ID from Coinbase
+    """
+    product_id = request.GET.get('product_id')
+    if not product_id:
+        logger.warning("Missing product_id in current prices request")
+        return JsonResponse({"error": "Missing product_id"}, status=400)
+
+    try:
+        url = f'https://api.pro.coinbase.com/products/{product_id}/ticker'
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        current_price = {
+            "product_id": product_id,
+            "price": data['price'],
+            "time": data['time'],
+            "trade_id": data['trade_id'],
+            "volume_24h": data['volume'],
+            "last_size": data['last_size'],
+            "best_bid": data['best_bid'],
+            "best_ask": data['best_ask']
+        }
+        return JsonResponse(current_price)
+    except requests.RequestException as e:
+        logger.error(f"Failed to fetch current price: {e}")
+        return JsonResponse({"error": "Failed to fetch current price"}, status=500)
 
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
