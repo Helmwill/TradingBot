@@ -23,11 +23,16 @@ jobs:
             pip install -r requirements.txt
       - run:
           name: Run migrations
-          command: | 
+          command: |
             . venv/bin/activate
-            echo $AWS_DB_PASSWORD
+            echo $AWS_DB_HOST
             python app/manage.py migrate
-
+      - run:
+          name: Run tests
+          command: |
+            . venv/bin/activate
+            pytest tests/
+            
 workflows:
   build_and_test:
     jobs:
