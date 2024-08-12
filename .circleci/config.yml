@@ -31,6 +31,7 @@ jobs:
           name: Run tests
           command: |
             . venv/bin/activate
+            export DJANGO_SETTINGS_MODULE=app.utils.settings
             pytest app/tests/
 
 workflows:
