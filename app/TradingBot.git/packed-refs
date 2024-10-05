@@ -1,0 +1,11 @@
+# pack-refs with: peeled fully-peeled sorted 
+6fb2b1a458f0cd6c90b64e875ee499a38cbed70a refs/heads/circleci-project-setup
+fd9150d6c4783d378dc319ab6ea99d070bd17ab2 refs/heads/master
+625dfe27b518bb6af88dee9ae41453f64c6a3a28 refs/heads/will
+912d7eedf4e4276a9b79e27e51843040b2103f82 refs/pull/1/head
+639e830c8438780667588414c36e6fa2bafdc177 refs/pull/2/head
+c5a0797f53de2f8bcf9dc158b39dfa64f1a4b480 refs/pull/3/head
+2ab3562a809b89cc31ab81e37a0ccced17df0c74 refs/pull/4/head
+4729a9f1b5a76b5133dbeb10f36dfa9fd2bb376a refs/pull/5/head
+5acfd08fe5a79ca21c3727a95b7b2503d8dd3395 refs/pull/6/head
+625dfe27b518bb6af88dee9ae41453f64c6a3a28 refs/pull/7/head
