@@ -15,3 +15,8 @@ class HistoricalDataModelTest(TestCase):
         )
         self.assertEqual(historical_data.product_id, 'BTC-USD')
         self.assertEqual(historical_data.low, 40000.0)
+        self.assertEqual(historical_data.high, 50000.0)
+        self.assertEqual(historical_data.open, 45000.0)
+        self.assertEqual(historical_data.close, 47000.0)
+        self.assertEqual(historical_data.volume, 1000.0)
+        self.assertEqual(historical_data.timestamp, '2022-01-01T00:00:00Z')
