@@ -1,0 +1,100 @@
+# Environment variables required:
+#   DB_PASSWORD, DB_NAME (default: tradingbot), DB_USER (default: postgres)
+#   DJANGO_SECRET_KEY, REDIS_URL
+#   CTRADER_CLIENT_ID, CTRADER_CLIENT_SECRET, CTRADER_ACCOUNT_ID
+#   ENVIRONMENT: development | test | production
+#   TRAEFIK_HOST — set per environment:
+#     dev:  TRAEFIK_HOST=bot.dev.domain.com
+#     qa:   TRAEFIK_HOST=bot.qa.domain.com
+#     prod: TRAEFIK_HOST=bot.domain.com
+
+services:
+  timescaledb:
+    image: timescale/timescaledb:latest-pg16
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME:-tradingbot}
+      POSTGRES_USER: ${DB_USER:-postgres}
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-postgres}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - platform-net
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - platform-net
+
+  tradingbot:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DB_NAME=${DB_NAME:-tradingbot}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=timescaledb
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - CTRADER_CLIENT_ID=${CTRADER_CLIENT_ID}
+      - CTRADER_CLIENT_SECRET=${CTRADER_CLIENT_SECRET}
+      - CTRADER_ACCOUNT_ID=${CTRADER_ACCOUNT_ID}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.tradingbot.rule=Host(`${TRAEFIK_HOST:-bot.dev.domain.com}`)"
+      - "traefik.http.routers.tradingbot.entrypoints=web"
+      - "traefik.http.services.tradingbot.loadbalancer.server.port=8000"
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8000/health/ || exit 1"]
+      interval: 30s
+      timeout: 10s
+      start_period: 40s
+      retries: 3
+    networks:
+      - platform-net
+
+  celery-worker:
+    build: .
+    command: celery -A trading worker --loglevel=info
+    environment:
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DB_NAME=${DB_NAME:-tradingbot}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=timescaledb
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - CTRADER_CLIENT_ID=${CTRADER_CLIENT_ID}
+      - CTRADER_CLIENT_SECRET=${CTRADER_CLIENT_SECRET}
+      - CTRADER_ACCOUNT_ID=${CTRADER_ACCOUNT_ID}
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - platform-net
+
+networks:
+  platform-net:
+    external: true

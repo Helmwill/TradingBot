@@ -2,13 +2,8 @@ from datetime import timedelta
 import os
 import environ
 import yaml
-from pathlib import Path
-import pymysql
 
-# Install pymysql as MySQLdb
-pymysql.install_as_MySQLdb()
-
-# Define BASE_DIR to point to the root directory of the project (practice_route)
+# Define BASE_DIR to point to the root directory of the project
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # Initialize environment variables
@@ -24,12 +19,14 @@ else:
 # Read environment variables
 try:
     SECRET_KEY = env('DJANGO_SECRET_KEY')
-    COINBASE_API_KEY_SANDBOX = env('API_KEY_SANDBOX')
-    COINBASE_API_SECRET_SANDBOX = env('API_SECRET_SANDBOX')
-    COINBASE_API_PASSPHRASE_SANDBOX = env('API_PASSPHRASE_SANDBOX')
 except Exception as e:
     print(f"Error reading environment variables: {e}")
     raise
+
+# cTrader credentials — read from environment, never hardcoded
+CTRADER_CLIENT_ID = env('CTRADER_CLIENT_ID', default='')
+CTRADER_CLIENT_SECRET = env('CTRADER_CLIENT_SECRET', default='')
+CTRADER_ACCOUNT_ID = env('CTRADER_ACCOUNT_ID', default='')
 
 # Path to your YAML config file
 config_path = os.path.join(BASE_DIR, 'config.yaml')
@@ -53,33 +50,27 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
-    # Add your other apps here
+    'timescale',
 ] + config['INSTALLED_APPS']
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': env('AWS_DB_NAME'),
-        'USER': env('AWS_DB_USER'),
-        'PASSWORD': env('AWS_DB_PASSWORD'),
-        'HOST': env('AWS_DB_HOST'),
-        'PORT': env('AWS_DB_PORT', default='3306'),
-        'OPTIONS': {
-            'connect_timeout': 300,
-        }
+        'ENGINE': 'timescale.db.backends.postgresql',
+        'NAME': env('DB_NAME', default='tradingbot'),
+        'USER': env('DB_USER', default='postgres'),
+        'PASSWORD': env('DB_PASSWORD', default=''),
+        'HOST': env('DB_HOST', default='timescaledb'),
+        'PORT': env('DB_PORT', default='5432'),
     }
 }
 
-# Determine the environment to use
+# cTrader host — demo for all non-production environments
 DJANGO_ENV = env('ENVIRONMENT', default='development')
-
-if DJANGO_ENV == 'development':
-    COINBASE_API_URL = 'https://api.pro.coinbase.com'
-elif DJANGO_ENV == 'test':
-    COINBASE_API_URL = 'https://api-public.sandbox.pro.coinbase.com'
-    COINBASE_API_KEY = COINBASE_API_KEY_SANDBOX
-    COINBASE_API_SECRET = COINBASE_API_SECRET_SANDBOX
-    COINBASE_API_PASSPHRASE = COINBASE_API_PASSPHRASE_SANDBOX
+if DJANGO_ENV == 'production':
+    CTRADER_HOST = 'live.ctraderapi.com'
+else:
+    CTRADER_HOST = 'demo.ctraderapi.com'
+CTRADER_PORT = int(env('CTRADER_PORT', default='5035'))
 
 # JWT Configuration
 REST_FRAMEWORK = {
@@ -92,6 +83,10 @@ SIMPLE_JWT = {
     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
     'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
 }
+
+# Celery
+CELERY_BROKER_URL = env('REDIS_URL', default='redis://redis:6379/0')
+CELERY_RESULT_BACKEND = env('REDIS_URL', default='redis://redis:6379/0')
 
 # Middleware configuration
 MIDDLEWARE = [
@@ -124,7 +119,7 @@ TEMPLATES = [
 # Logging configuration
 LOGGING = {
     'version': 1,
-    'disable_existing loggers': False,
+    'disable_existing_loggers': False,
     'handlers': {
         'file': {
             'level': 'DEBUG',
