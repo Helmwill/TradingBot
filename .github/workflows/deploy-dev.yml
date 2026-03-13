@@ -1,0 +1,14 @@
+name: Deploy Dev
+
+on:
+  push:
+    branches:
+      - dev
+
+jobs:
+  deploy:
+    uses: Helmwill/DevOps-Platform/.github/workflows/deploy-dev.yml@main
+    with:
+      image_name: tradingbot
+      compose_service: tradingbot
+    secrets: inherit
