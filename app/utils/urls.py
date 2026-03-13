@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from trading.views import health_check, historical_data_view, current_prices_view, buy_request, sell_request
+from trading.views import health_check, historical_data_view, current_prices_view, buy_request, sell_request, bot_status, bot_trades
 
 # S5.1 JWT Auth Audit (2026-03-13):
 # All trading views (health_check, historical_data_view, current_prices_view,
@@ -18,5 +18,7 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('buy/', buy_request, name='buy_request'),
     path('sell/', sell_request, name='sell_request'),
+    path('bot/status/', bot_status, name='bot_status'),
+    path('bot/trades/', bot_trades, name='bot_trades'),
     path('mock/', include('mock_server.urls')),
 ]
