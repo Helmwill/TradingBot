@@ -1,22 +1,56 @@
-from django.test import TestCase
-from trading.models import HistoricalData
+import pytest
+from decimal import Decimal
+from django.utils import timezone
+from trading.models import Trade, OHLCVBar
 
-class HistoricalDataModelTest(TestCase):
 
-    def test_historical_data_creation(self):
-        historical_data = HistoricalData.objects.create(
-            product_id='BTC-USD',
-            timestamp='2022-01-01T00:00:00Z',
-            low=40000.0,
-            high=50000.0,
-            open=45000.0,
-            close=47000.0,
-            volume=1000.0
-        )
-        self.assertEqual(historical_data.product_id, 'BTC-USD')
-        self.assertEqual(historical_data.low, 40000.0)
-        self.assertEqual(historical_data.high, 50000.0)
-        self.assertEqual(historical_data.open, 45000.0)
-        self.assertEqual(historical_data.close, 47000.0)
-        self.assertEqual(historical_data.volume, 1000.0)
-        self.assertEqual(historical_data.timestamp, '2022-01-01T00:00:00Z')
+@pytest.mark.django_db
+def test_create_trade():
+    trade = Trade.objects.create(
+        instrument='AAPL',
+        action='BUY',
+        price=Decimal('175.50'),
+        amount=Decimal('1.0'),
+        signal_meta={'confidence': 0.8},
+        order_id='order-001',
+    )
+    assert trade.pk is not None
+    assert trade.instrument == 'AAPL'
+    assert trade.action == 'BUY'
+
+
+@pytest.mark.django_db
+def test_create_ohlcvbar():
+    bar = OHLCVBar.objects.create(
+        timestamp=timezone.now(),
+        instrument='AAPL',
+        open=Decimal('174.00'),
+        high=Decimal('176.00'),
+        low=Decimal('173.50'),
+        close=Decimal('175.50'),
+        volume=Decimal('1000000'),
+    )
+    assert bar.pk is not None
+    assert bar.high == Decimal('176.00')
+
+
+@pytest.mark.django_db
+def test_trade_signal_meta_stores_dict():
+    meta = {'action': 'BUY', 'confidence': 0.82, 'atr_window': 14}
+    trade = Trade.objects.create(
+        instrument='UK100',
+        action='BUY',
+        price=Decimal('7500'),
+        amount=Decimal('0.5'),
+        signal_meta=meta,
+    )
+    reloaded = Trade.objects.get(pk=trade.pk)
+    assert reloaded.signal_meta == meta
+
+
+@pytest.mark.django_db
+def test_trades_ordered_newest_first():
+    Trade.objects.create(instrument='AAPL', action='BUY', price=Decimal('100'), amount=Decimal('1'), signal_meta={})
+    Trade.objects.create(instrument='TSLA', action='SELL', price=Decimal('200'), amount=Decimal('1'), signal_meta={})
+    trades = list(Trade.objects.all())
+    assert trades[0].timestamp >= trades[1].timestamp
