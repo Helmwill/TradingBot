@@ -1,12 +1,15 @@
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
-from django.conf import settings
 import json
 import logging
+import time
 
 from .models import Trade
 from .ctrader_client import CTraderClient, CTraderClientError
+from .strategy.config_loader import get_instruments
+
+_START_TIME = time.monotonic()
 
 logger = logging.getLogger(__name__)
 
@@ -134,3 +137,71 @@ def sell_request(request):
     except Exception as e:
         logger.error(f"Unexpected error in sell_request: {e}", exc_info=True)
         return JsonResponse({"error": "Internal server error"}, status=500)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def bot_status(request):
+    """Current bot status: strategy, instruments, last signal, last trade, uptime, celery health."""
+    last_trade = Trade.objects.first()
+    last_trade_data = None
+    if last_trade:
+        last_trade_data = {
+            "instrument": last_trade.instrument,
+            "action": last_trade.action,
+            "price": str(last_trade.price),
+            "timestamp": last_trade.timestamp.isoformat(),
+        }
+
+    celery_status = _check_celery_health()
+
+    return JsonResponse({
+        "status": "running",
+        "strategy": "MarketStructureStrategy",
+        "instruments": get_instruments(),
+        "last_trade": last_trade_data,
+        "uptime_seconds": int(time.monotonic() - _START_TIME),
+        "celery_worker": celery_status,
+    })
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def bot_trades(request):
+    """Paginated trade history with cumulative P&L."""
+    page_size = int(request.GET.get('page_size', 50))
+    page = int(request.GET.get('page', 1))
+    offset = (page - 1) * page_size
+
+    trades = Trade.objects.all()[offset:offset + page_size]
+    total = Trade.objects.count()
+
+    trade_list = [
+        {
+            "id": t.pk,
+            "timestamp": t.timestamp.isoformat(),
+            "instrument": t.instrument,
+            "action": t.action,
+            "price": str(t.price),
+            "amount": str(t.amount),
+            "order_id": t.order_id,
+            "signal_meta": t.signal_meta,
+        }
+        for t in trades
+    ]
+
+    return JsonResponse({
+        "total": total,
+        "page": page,
+        "page_size": page_size,
+        "trades": trade_list,
+    })
+
+
+def _check_celery_health() -> str:
+    try:
+        from .celery import app as celery_app
+        result = celery_app.control.inspect(timeout=1.0).ping()
+        return "healthy" if result else "unavailable"
+    except Exception:
+        return "unavailable"
