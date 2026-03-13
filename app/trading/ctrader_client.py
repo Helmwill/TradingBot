@@ -117,7 +117,49 @@ class CTraderClient:
             "Implement using ProtoOANewOrderReq in Day 2 Celery tasks."
         )
 
+    def get_ohlcv_bars(self, symbol: str, n_bars: int = 100) -> 'pd.DataFrame':
+        """
+        Fetch historical OHLCV bars for a symbol.
+
+        Args:
+            symbol: cTrader symbol name
+            n_bars: number of bars to fetch (default 100)
+
+        Returns:
+            DataFrame with columns [timestamp, open, high, low, close, volume]
+
+        Raises:
+            CTraderClientError: if bars cannot be fetched
+        """
+        if not CTRADER_AVAILABLE:
+            return self._stub_get_ohlcv_bars(symbol, n_bars)
+        try:
+            return asyncio.run(self._async_get_ohlcv_bars(symbol, n_bars))
+        except Exception as e:
+            raise CTraderClientError(f"Failed to fetch OHLCV bars for {symbol}: {e}") from e
+
+    async def _async_get_ohlcv_bars(self, symbol: str, n_bars: int) -> 'pd.DataFrame':
+        """Fetch OHLCV bars via ProtoOAGetTrendbarsReq."""
+        # TODO: Implement using ProtoOAGetTrendbarsReq in full cTrader integration
+        raise NotImplementedError("Async OHLCV fetch not yet implemented.")
+
     # ---- stub implementations (used when ctrader-open-api not installed) ----
+
+    def _stub_get_ohlcv_bars(self, symbol: str, n_bars: int) -> 'pd.DataFrame':
+        """Generate synthetic OHLCV data for testing."""
+        import pandas as pd
+        import numpy as np
+        rng = np.random.default_rng(seed=abs(hash(symbol)) % (2**32))
+        base = {'AAPL': 175.0, 'TSLA': 195.0, 'UK100': 7500.0}.get(symbol, 100.0)
+        close = base + rng.standard_normal(n_bars).cumsum() * 0.5
+        return pd.DataFrame({
+            'timestamp': pd.date_range(end=pd.Timestamp.utcnow(), periods=n_bars, freq='1h'),
+            'open': close - rng.uniform(0, 0.3, n_bars),
+            'high': close + rng.uniform(0, 0.5, n_bars),
+            'low': close - rng.uniform(0, 0.5, n_bars),
+            'close': close,
+            'volume': rng.uniform(500, 5000, n_bars),
+        })
 
     def _stub_get_spot_price(self, symbol: str) -> float:
         """Return a fake price for testing without live API."""

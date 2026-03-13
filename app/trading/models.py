@@ -63,3 +63,16 @@ class OHLCVBar(_TradeBase):
 
     def __str__(self):
         return f"{self.instrument} OHLCV @ {self.timestamp}"
+
+
+class TradingError(models.Model):
+    """Dead-letter log for failed Celery task errors."""
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
+    instrument = models.CharField(max_length=50)
+    message = models.TextField()
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"Error {self.instrument} @ {self.timestamp}: {self.message[:60]}"
