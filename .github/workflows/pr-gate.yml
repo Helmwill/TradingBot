@@ -1,0 +1,15 @@
+name: PR Gate
+
+on:
+  pull_request:
+    branches:
+      - master
+      - dev
+
+jobs:
+  gauntlet:
+    uses: Helmwill/DevOps-Platform/.github/workflows/pr-gate.yml@main
+    with:
+      image_name: tradingbot
+      coverage_threshold: 80
+    secrets: inherit
