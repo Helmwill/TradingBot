@@ -69,6 +69,8 @@ services:
       timeout: 10s
       start_period: 40s
       retries: 3
+    security_opt:
+      - no-new-privileges:true
     networks:
       - platform-net
 
@@ -92,6 +94,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
     networks:
       - platform-net
 
