@@ -8,46 +8,34 @@ except ImportError:
     TimescaleModel = models.Model
 
 
-class HistoricalData(models.Model):
-    product_id = models.CharField(max_length=10)
-    timestamp = models.DateTimeField()
-    low = models.FloatField()
-    high = models.FloatField()
-    open = models.FloatField()
-    close = models.FloatField()
-    volume = models.FloatField()
-
-    def __str__(self):
-        return f"{self.product_id} at {self.timestamp}"
-
-
 _TradeBase = TimescaleModel if TIMESCALE_AVAILABLE else models.Model
 
 
 class Trade(_TradeBase):
     """Records each executed trade order."""
     timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
-    instrument = models.CharField(max_length=50)
+    ticker = models.CharField(max_length=20)
     action = models.CharField(max_length=4)  # BUY, SELL
-    price = models.DecimalField(max_digits=20, decimal_places=8)
-    amount = models.DecimalField(max_digits=20, decimal_places=8)
-    signal_meta = models.JSONField(default=dict)
+    quantity = models.DecimalField(max_digits=20, decimal_places=8)
+    fill_price = models.DecimalField(max_digits=20, decimal_places=8)
     order_id = models.CharField(max_length=100, blank=True)
+    status = models.CharField(max_length=20, default='Filled')
+    signal_meta = models.JSONField(default=dict)
 
     class Meta:
         ordering = ['-timestamp']
         indexes = [
-            models.Index(fields=['instrument', 'timestamp']),
+            models.Index(fields=['ticker', 'timestamp']),
         ]
 
     def __str__(self):
-        return f"{self.action} {self.instrument} @ {self.price} ({self.timestamp})"
+        return f"{self.action} {self.ticker} @ {self.fill_price} ({self.timestamp})"
 
 
 class OHLCVBar(_TradeBase):
-    """OHLCV price bars for backtesting and MCPT validation."""
+    """OHLCV price bars persisted from IBKR market data feed."""
     timestamp = models.DateTimeField(db_index=True)
-    instrument = models.CharField(max_length=50)
+    ticker = models.CharField(max_length=20)
     open = models.DecimalField(max_digits=20, decimal_places=8)
     high = models.DecimalField(max_digits=20, decimal_places=8)
     low = models.DecimalField(max_digits=20, decimal_places=8)
@@ -56,23 +44,23 @@ class OHLCVBar(_TradeBase):
 
     class Meta:
         ordering = ['-timestamp']
-        unique_together = [('instrument', 'timestamp')]
+        unique_together = [('ticker', 'timestamp')]
         indexes = [
-            models.Index(fields=['instrument', 'timestamp']),
+            models.Index(fields=['ticker', 'timestamp']),
         ]
 
     def __str__(self):
-        return f"{self.instrument} OHLCV @ {self.timestamp}"
+        return f"{self.ticker} OHLCV @ {self.timestamp}"
 
 
 class TradingError(models.Model):
     """Dead-letter log for failed Celery task errors."""
     timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
-    instrument = models.CharField(max_length=50)
+    ticker = models.CharField(max_length=20)
     message = models.TextField()
 
     class Meta:
         ordering = ['-timestamp']
 
     def __str__(self):
-        return f"Error {self.instrument} @ {self.timestamp}: {self.message[:60]}"
+        return f"Error {self.ticker} @ {self.timestamp}: {self.message[:60]}"

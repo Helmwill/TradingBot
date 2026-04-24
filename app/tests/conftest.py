@@ -1,4 +1,6 @@
 import pytest
+import numpy as np
+import pandas as pd
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -20,16 +22,33 @@ def authenticated_client(db):
 
 @pytest.fixture
 def sample_ohlcv_df():
-    import pandas as pd
-    import numpy as np
-    np.random.seed(42)
+    """100-bar OHLCV fixture — enough bars for RSI+MACD computation."""
+    rng = np.random.default_rng(seed=42)
     n = 100
-    close = 175.0 + np.cumsum(np.random.randn(n) * 0.5)
+    close = 175.0 + rng.standard_normal(n).cumsum() * 0.5
     return pd.DataFrame({
-        'timestamp': pd.date_range('2025-01-01', periods=n, freq='1h'),
-        'open': close - 0.2,
-        'high': close + 0.5,
-        'low': close - 0.5,
+        'timestamp': pd.date_range('2025-01-01', periods=n, freq='5min'),
+        'open': close - rng.uniform(0, 0.2, n),
+        'high': close + rng.uniform(0, 0.5, n),
+        'low': close - rng.uniform(0, 0.5, n),
         'close': close,
-        'volume': np.abs(np.random.randn(n) * 1000) + 500,
+        'volume': rng.uniform(1000, 10000, n),
     })
+
+
+@pytest.fixture
+def backtest_fixture_df():
+    """200-bar OHLCV fixture for backtest Sharpe/drawdown CI gate."""
+    rng = np.random.default_rng(seed=99)
+    n = 200
+    close = 175.0 + rng.standard_normal(n).cumsum() * 0.4
+    return pd.DataFrame({
+        'timestamp': pd.date_range('2025-06-01', periods=n, freq='1h'),
+        'open': close - rng.uniform(0, 0.2, n),
+        'high': close + rng.uniform(0, 0.5, n),
+        'low': close - rng.uniform(0, 0.5, n),
+        'close': close,
+        'volume': rng.uniform(500, 5000, n),
+    })
+
+

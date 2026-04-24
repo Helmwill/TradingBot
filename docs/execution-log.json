@@ -5,7 +5,25 @@
       "timestamp": "2026-03-13",
       "event": "BRIEF_CONFIRMED",
       "actor": "orchestrator",
-      "detail": "Helmwill confirmed project brief. Discrepancies acknowledged: DB is MySQL not SQLite, CI is CircleCI not GitHub Actions, branch is master. Day 1 fan-out starting — 5 agents launched in parallel: Infra (S1.1-S1.5), Strategy Dev (S2.1-S2.4), Backend Dev (S4.1-S4.3 S5.1), CI/CD Builder (S6.1-S6.2), QA Agent (S7.1-S7.3)."
+      "detail": "Helmwill confirmed project brief. Discrepancies acknowledged: DB is MySQL not SQLite, CI is CircleCI not GitHub Actions, branch is master. Day 1 fan-out starting — 5 agents launched in parallel."
+    },
+    {
+      "timestamp": "2026-04-24",
+      "event": "BRIEF_CONFIRMED",
+      "actor": "orchestrator",
+      "detail": "v2 stack confirmed: IBKR via ib_insync, pandas-ta signals (RSI+MACD), pure US equities (NYSE/NASDAQ), IB Gateway container, TimescaleDB, Celery+Beat, GitHub Actions. No TradingView, no cTrader, no market-structure, no mcpt."
+    },
+    {
+      "timestamp": "2026-04-24",
+      "event": "STORY_COMPLETE",
+      "actor": "code-builder",
+      "detail": "All Day 1+2 stories written in single push. Files written: requirements.txt, docker-compose.yml (6 services inc ib-gateway + celery-beat), settings.py (IBKR creds, no YAML dep), models.py (ticker/fill_price/quantity/status rename), migration 0004, broker/ibkr.py (IBKRConnector), signals/engine.py (SignalEngine pandas-ta), signals/market_hours.py (NYSE calendar), signals/config.py, tasks.py, celery.py, views.py, urls.py, pytest.ini, all test files (test_signal_engine, test_market_hours, test_ibkr_connector, test_tasks, test_models, test_views, test_integration, test_backtest). Legacy deleted: ctrader_client.py, strategy/signal_layer.py, strategy/validator.py, strategy/config_loader.py, test_signal_layer.py, test_validator.py, test_strategy_edge.py."
+    },
+    {
+      "timestamp": "2026-04-24",
+      "event": "GATE_REACHED",
+      "actor": "orchestrator",
+      "detail": "AWAITING_HUMAN_GIT_ACTION — all code written and staged. Helmwill to: git add -A && git commit -m 'feat: replace cTrader/market-structure with IBKR/pandas-ta v2 stack' && git push origin dev. Then open PR dev→main."
     }
   ]
 }

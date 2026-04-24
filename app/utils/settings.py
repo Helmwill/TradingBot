@@ -1,46 +1,19 @@
 from datetime import timedelta
 import os
 import environ
-import yaml
 
-# Define BASE_DIR to point to the root directory of the project
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
-# Initialize environment variables
 env = environ.Env()
+env_file = os.path.join(BASE_DIR, 'secure_keys.env')
+if os.path.exists(env_file):
+    environ.Env.read_env(env_file)
 
-# Reading .env file (ensure this is after BASE_DIR definition)
-env_file_path = os.path.join(BASE_DIR, 'secure_keys.env')
-if os.path.exists(env_file_path):
-    environ.Env.read_env(env_file_path)
-else:
-    print(f"Expected .env file at {env_file_path} not found, using environment variables set in CI/CD.")
+SECRET_KEY = env('DJANGO_SECRET_KEY')
 
-# Read environment variables
-try:
-    SECRET_KEY = env('DJANGO_SECRET_KEY')
-except Exception as e:
-    print(f"Error reading environment variables: {e}")
-    raise
+DEBUG = env.bool('DEBUG', default=False)
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['localhost', '127.0.0.1'])
 
-# cTrader credentials — read from environment, never hardcoded
-CTRADER_CLIENT_ID = env('CTRADER_CLIENT_ID', default='')
-CTRADER_CLIENT_SECRET = env('CTRADER_CLIENT_SECRET', default='')
-CTRADER_ACCOUNT_ID = env('CTRADER_ACCOUNT_ID', default='')
-
-# Path to your YAML config file
-config_path = os.path.join(BASE_DIR, 'config.yaml')
-
-# Ensure the YAML file path is correct by checking its existence
-if not os.path.exists(config_path):
-    raise FileNotFoundError(f"Expected config file at {config_path}")
-
-# Load YAML
-with open(config_path, 'r') as config_file:
-    config = yaml.safe_load(config_file)
-
-DEBUG = config['DEBUG']
-ALLOWED_HOSTS = config['ALLOWED_HOSTS']
 INSTALLED_APPS = [
     'django.contrib.admin',
     'django.contrib.auth',
@@ -51,44 +24,10 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'timescale',
-] + config['INSTALLED_APPS']
+    'utils',
+    'trading',
+]
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'timescale.db.backends.postgresql',
-        'NAME': env('DB_NAME', default='tradingbot'),
-        'USER': env('DB_USER', default='postgres'),
-        'PASSWORD': env('DB_PASSWORD', default=''),
-        'HOST': env('DB_HOST', default='timescaledb'),
-        'PORT': env('DB_PORT', default='5432'),
-    }
-}
-
-# cTrader host — demo for all non-production environments
-DJANGO_ENV = env('ENVIRONMENT', default='development')
-if DJANGO_ENV == 'production':
-    CTRADER_HOST = 'live.ctraderapi.com'
-else:
-    CTRADER_HOST = 'demo.ctraderapi.com'
-CTRADER_PORT = int(env('CTRADER_PORT', default='5035'))
-
-# JWT Configuration
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ),
-}
-
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
-}
-
-# Celery
-CELERY_BROKER_URL = env('REDIS_URL', default='redis://redis:6379/0')
-CELERY_RESULT_BACKEND = env('REDIS_URL', default='redis://redis:6379/0')
-
-# Middleware configuration
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -99,7 +38,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# TEMPLATES configuration
+ROOT_URLCONF = 'utils.urls'
+WSGI_APPLICATION = 'utils.wsgi.application'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -116,34 +57,53 @@ TEMPLATES = [
     },
 ]
 
-# Logging configuration
+DATABASES = {
+    'default': {
+        'ENGINE': 'timescale.db.backends.postgresql',
+        'NAME': env('DB_NAME', default='tradingbot'),
+        'USER': env('DB_USER', default='postgres'),
+        'PASSWORD': env('DB_PASSWORD', default=''),
+        'HOST': env('DB_HOST', default='timescaledb'),
+        'PORT': env('DB_PORT', default='5432'),
+    }
+}
+
+# IBKR connection — read from environment, never hardcoded
+IBKR_HOST = env('IBKR_HOST', default='ib-gateway')
+IBKR_PORT = env.int('IBKR_PORT', default=4002)
+IBKR_CLIENT_ID = env.int('IBKR_CLIENT_ID', default=1)
+
+DJANGO_ENV = env('ENVIRONMENT', default='development')
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+}
+
+CELERY_BROKER_URL = env('REDIS_URL', default='redis://redis:6379/0')
+CELERY_RESULT_BACKEND = env('REDIS_URL', default='redis://redis:6379/0')
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
     'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': os.path.join(BASE_DIR, 'test_env/logs/debug.log'),
-        },
+        'console': {'class': 'logging.StreamHandler'},
     },
-    'loggers': {
-        'django': {
-            'handlers': ['file'],
-            'level': 'DEBUG',
-            'propagate': True,
-        },
+    'root': {
+        'handlers': ['console'],
+        'level': 'INFO',
     },
 }
 
-# Static files (CSS, JavaScript, Images)
 STATIC_URL = '/static/'
-
-# Internationalization
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
-
-# Default primary key field type
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

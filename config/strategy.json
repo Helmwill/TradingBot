@@ -1,31 +1,37 @@
 {
-  "instruments": ["AAPL", "TSLA", "UK100"],
+  "tickers": ["AAPL", "TSLA", "MSFT", "NVDA"],
   "default": {
-    "atr_window": 14,
-    "buy_threshold": 0.6,
-    "sell_threshold": 0.6,
-    "position_size": 1.0,
-    "poll_interval_seconds": 60
+    "rsi_period": 14,
+    "rsi_oversold": 30.0,
+    "rsi_overbought": 70.0,
+    "macd_fast": 12,
+    "macd_slow": 26,
+    "macd_signal": 9,
+    "position_size": 1,
+    "poll_interval_seconds": 300
   },
   "AAPL": {
-    "atr_window": 14,
-    "buy_threshold": 0.65,
-    "sell_threshold": 0.65,
-    "position_size": 1.0,
-    "poll_interval_seconds": 60
+    "rsi_oversold": 30.0,
+    "rsi_overbought": 70.0,
+    "position_size": 5,
+    "poll_interval_seconds": 300
   },
   "TSLA": {
-    "atr_window": 10,
-    "buy_threshold": 0.7,
-    "sell_threshold": 0.7,
-    "position_size": 0.5,
-    "poll_interval_seconds": 60
+    "rsi_oversold": 35.0,
+    "rsi_overbought": 65.0,
+    "position_size": 2,
+    "poll_interval_seconds": 300
   },
-  "UK100": {
-    "atr_window": 14,
-    "buy_threshold": 0.6,
-    "sell_threshold": 0.6,
-    "position_size": 1.0,
+  "MSFT": {
+    "rsi_oversold": 30.0,
+    "rsi_overbought": 70.0,
+    "position_size": 5,
+    "poll_interval_seconds": 300
+  },
+  "NVDA": {
+    "rsi_oversold": 35.0,
+    "rsi_overbought": 65.0,
+    "position_size": 2,
     "poll_interval_seconds": 300
   }
 }

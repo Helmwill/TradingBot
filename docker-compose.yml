@@ -1,7 +1,8 @@
 # Environment variables required:
 #   DB_PASSWORD, DB_NAME (default: tradingbot), DB_USER (default: postgres)
 #   DJANGO_SECRET_KEY, REDIS_URL
-#   CTRADER_CLIENT_ID, CTRADER_CLIENT_SECRET, CTRADER_ACCOUNT_ID
+#   IBKR_HOST, IBKR_PORT, IBKR_CLIENT_ID
+#   IBKR_USERNAME, IBKR_PASSWORD
 #   ENVIRONMENT: development | test | production
 #   TRAEFIK_HOST — set per environment:
 #     dev:  TRAEFIK_HOST=bot.dev.domain.com
@@ -37,6 +38,26 @@ services:
     networks:
       - platform-net
 
+  ib-gateway:
+    image: ghcr.io/gnzsnz/ib-gateway:latest
+    environment:
+      IBKR_USERNAME: ${IBKR_USERNAME}
+      IBKR_PASSWORD: ${IBKR_PASSWORD}
+      TRADING_MODE: ${TRADING_MODE:-paper}
+      VNC_SERVER_PASSWORD: ${VNC_SERVER_PASSWORD:-}
+    expose:
+      - "4002"
+    healthcheck:
+      test: ["CMD-SHELL", "nc -z localhost 4002 || exit 1"]
+      interval: 15s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - platform-net
+
   tradingbot:
     build: .
     ports:
@@ -49,10 +70,11 @@ services:
       - DB_HOST=timescaledb
       - DB_PORT=5432
       - REDIS_URL=redis://redis:6379/0
-      - CTRADER_CLIENT_ID=${CTRADER_CLIENT_ID}
-      - CTRADER_CLIENT_SECRET=${CTRADER_CLIENT_SECRET}
-      - CTRADER_ACCOUNT_ID=${CTRADER_ACCOUNT_ID}
+      - IBKR_HOST=ib-gateway
+      - IBKR_PORT=${IBKR_PORT:-4002}
+      - IBKR_CLIENT_ID=${IBKR_CLIENT_ID:-1}
       - ENVIRONMENT=${ENVIRONMENT:-development}
+      - TRADING_TICKERS=${TRADING_TICKERS:-AAPL,TSLA,MSFT,NVDA}
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.tradingbot.rule=Host(`${TRAEFIK_HOST:-bot.dev.domain.com}`)"
@@ -62,6 +84,8 @@ services:
       timescaledb:
         condition: service_healthy
       redis:
+        condition: service_healthy
+      ib-gateway:
         condition: service_healthy
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8000/health/ || exit 1"]
@@ -85,10 +109,36 @@ services:
       - DB_HOST=timescaledb
       - DB_PORT=5432
       - REDIS_URL=redis://redis:6379/0
-      - CTRADER_CLIENT_ID=${CTRADER_CLIENT_ID}
-      - CTRADER_CLIENT_SECRET=${CTRADER_CLIENT_SECRET}
-      - CTRADER_ACCOUNT_ID=${CTRADER_ACCOUNT_ID}
+      - IBKR_HOST=ib-gateway
+      - IBKR_PORT=${IBKR_PORT:-4002}
+      - IBKR_CLIENT_ID=${IBKR_CLIENT_ID:-2}
       - ENVIRONMENT=${ENVIRONMENT:-development}
+      - TRADING_TICKERS=${TRADING_TICKERS:-AAPL,TSLA,MSFT,NVDA}
+    depends_on:
+      timescaledb:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      ib-gateway:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - platform-net
+
+  celery-beat:
+    build: .
+    command: celery -A trading beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    environment:
+      - DJANGO_SECRET_KEY=${DJANGO_SECRET_KEY}
+      - DB_NAME=${DB_NAME:-tradingbot}
+      - DB_USER=${DB_USER:-postgres}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=timescaledb
+      - DB_PORT=5432
+      - REDIS_URL=redis://redis:6379/0
+      - ENVIRONMENT=${ENVIRONMENT:-development}
+      - TRADING_TICKERS=${TRADING_TICKERS:-AAPL,TSLA,MSFT,NVDA}
     depends_on:
       timescaledb:
         condition: service_healthy

@@ -1,13 +1,16 @@
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import path
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from trading.views import health_check, historical_data_view, current_prices_view, buy_request, sell_request, bot_status, bot_trades
 
-# S5.1 JWT Auth Audit (2026-03-13):
-# All trading views (health_check, historical_data_view, current_prices_view,
-# buy_request, sell_request) are decorated with @permission_classes([IsAuthenticated]).
-# TokenObtainPairView and TokenRefreshView are the only unauthenticated routes — correct,
-# as they are the login/token-refresh endpoints.
+from trading.views import (
+    health_check,
+    historical_data_view,
+    current_prices_view,
+    buy_request,
+    sell_request,
+    bot_status,
+    bot_trades,
+)
 
 urlpatterns = [
     path('health/', health_check, name='health_check'),
@@ -20,5 +23,4 @@ urlpatterns = [
     path('sell/', sell_request, name='sell_request'),
     path('bot/status/', bot_status, name='bot_status'),
     path('bot/trades/', bot_trades, name='bot_trades'),
-    path('mock/', include('mock_server.urls')),
 ]
