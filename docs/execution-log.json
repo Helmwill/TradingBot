@@ -21,9 +21,15 @@
     },
     {
       "timestamp": "2026-04-24",
+      "event": "STORY_COMPLETE",
+      "actor": "code-builder",
+      "detail": "Gap fixes: django-celery-beat added to requirements.txt. ADRs written: 002-signal-library.md (pandas-ta), 003-broker.md (IBKR/ib_insync), 005-market-data.md (IBKR feed over yfinance)."
+    },
+    {
+      "timestamp": "2026-04-24",
       "event": "GATE_REACHED",
       "actor": "orchestrator",
-      "detail": "AWAITING_HUMAN_GIT_ACTION — all code written and staged. Helmwill to: git add -A && git commit -m 'feat: replace cTrader/market-structure with IBKR/pandas-ta v2 stack' && git push origin dev. Then open PR dev→main."
+      "detail": "AWAITING_HUMAN_GIT_ACTION — commit and push dev, open PR dev→master to trigger gauntlet. Then: credential_actions gate (add GitHub secrets), ibkr_paper_ready gate (open IBKR paper account)."
     }
   ]
 }

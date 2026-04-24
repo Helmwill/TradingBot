@@ -16,6 +16,7 @@ sqlparse==0.5.0
 urllib3==2.2.1
 gunicorn==22.0.0
 celery==5.4.0
+django-celery-beat>=2.6.0
 redis==5.0.8
 ib_insync>=0.9.86
 ibapi>=10.19.2
