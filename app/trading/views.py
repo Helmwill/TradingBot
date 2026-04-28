@@ -1,25 +1,56 @@
 import json
 import logging
+import shutil
 import time
 
 from django.conf import settings
 from django.http import JsonResponse
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 
 from .broker.ibkr import IBKRConnector, IBKRError
 from .models import Trade
 from .signals.config import get_tickers
 from .signals.market_hours import is_market_open
 
+_PLATFORM_SERVICES = [
+    {"name": "tradingbot", "image": "tradingbot:latest", "status": "running"},
+    {"name": "timescaledb", "image": "timescale/timescaledb:latest-pg16", "status": "running"},
+    {"name": "redis", "image": "redis:7-alpine", "status": "running"},
+    {"name": "celery-worker", "image": "tradingbot:latest", "status": "running"},
+    {"name": "celery-beat", "image": "tradingbot:latest", "status": "running"},
+    {"name": "ib-gateway", "image": "ghcr.io/gnzsnz/ib-gateway:latest", "status": "running"},
+]
+
 _START_TIME = time.monotonic()
 logger = logging.getLogger(__name__)
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([AllowAny])
 def health_check(request):
-    return JsonResponse({"message": "Health check: status ok"}, status=200)
+    return JsonResponse({"status": "ok"}, status=200)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_containers(request):
+    return JsonResponse(_PLATFORM_SERVICES, safe=False)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def api_stats(request):
+    usage = shutil.disk_usage('/')
+    gb = 1024 ** 3
+    return JsonResponse({
+        'server': {
+            'disk_used_gb': round(usage.used / gb, 2),
+            'disk_total_gb': round(usage.total / gb, 2),
+            'disk_free_gb': round(usage.free / gb, 2),
+            'uptime_seconds': int(time.monotonic() - _START_TIME),
+        }
+    })
 
 
 @api_view(['GET'])

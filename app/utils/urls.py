@@ -10,6 +10,8 @@ from trading.views import (
     sell_request,
     bot_status,
     bot_trades,
+    api_containers,
+    api_stats,
 )
 
 urlpatterns = [
@@ -19,6 +21,8 @@ urlpatterns = [
     path('current_prices/', current_prices_view, name='current_prices'),
     path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('api/containers/', api_containers, name='api-containers'),
+    path('api/stats/', api_stats, name='api-stats'),
     path('buy/', buy_request, name='buy_request'),
     path('sell/', sell_request, name='sell_request'),
     path('bot/status/', bot_status, name='bot_status'),

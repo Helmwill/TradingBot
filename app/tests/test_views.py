@@ -30,16 +30,36 @@ MOCK_ORDER = {
 
 @pytest.mark.django_db
 def test_health_check_returns_200():
-    client = make_auth_client('hc_user')
-    response = client.get(reverse('health_check'))
+    response = APIClient().get(reverse('health_check'))
     assert response.status_code == 200
-    assert response.json() == {"message": "Health check: status ok"}
+    assert response.json()['status'] == 'ok'
 
 
 @pytest.mark.django_db
-def test_health_check_requires_auth():
-    response = APIClient().get(reverse('health_check'))
+def test_api_containers_returns_list():
+    client = make_auth_client('containers_user')
+    response = client.get(reverse('api-containers'))
+    assert response.status_code == 200
+    body = response.json()
+    assert isinstance(body, list)
+    assert len(body) > 0
+    assert 'name' in body[0]
+
+
+@pytest.mark.django_db
+def test_api_containers_requires_auth():
+    response = APIClient().get(reverse('api-containers'))
     assert response.status_code == 401
+
+
+@pytest.mark.django_db
+def test_api_stats_returns_server_metrics():
+    client = make_auth_client('stats_user')
+    response = client.get(reverse('api-stats'))
+    assert response.status_code == 200
+    body = response.json()
+    assert 'server' in body
+    assert isinstance(body['server']['disk_used_gb'], float)
 
 
 @pytest.mark.django_db
