@@ -32,12 +32,15 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     needs: build-push
+    env:
+      VPS_HOST: ${{ secrets.VPS_HOST }}
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
 
       - name: Deploy to VPS (qa)
+        if: ${{ env.VPS_HOST != '' }}
         uses: appleboy/ssh-action@v1
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -50,3 +53,7 @@ jobs:
             ENVIRONMENT=test docker compose up -d tradingbot celery-worker celery-beat
             sleep 10
             SMOKE_BASE_URL=http://localhost:8000 bash scripts/smoke.sh
+
+      - name: Deploy skipped — VPS_HOST not configured
+        if: ${{ env.VPS_HOST == '' }}
+        run: echo "VPS_HOST secret not set. Add VPS_HOST, VPS_USER, and VPS_SSH_KEY secrets to enable deployment."
