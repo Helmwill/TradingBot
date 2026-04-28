@@ -19,7 +19,6 @@ celery==5.4.0
 django-celery-beat>=2.6.0
 redis==5.0.8
 ib_insync>=0.9.86
-ibapi>=10.19.2
 pandas>=2.0.0
 pandas-ta>=0.3.14b
 pandas-market-calendars>=4.3.1
