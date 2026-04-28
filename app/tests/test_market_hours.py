@@ -4,7 +4,6 @@ Unit tests for NYSE market hours gating.
 Tests cover: open window, pre-open, post-close, weekends, UTC boundary.
 Holiday tests use the _utc_window_check fallback when pandas-market-calendars is unavailable.
 """
-import pytest
 from datetime import datetime
 import pytz
 from trading.signals.market_hours import is_market_open, _utc_window_check

@@ -45,7 +45,10 @@ jobs:
         run: pip install -r requirements.txt
 
       - name: Lint
-        run: flake8 app/ --max-line-length=120 --exclude=app/trading/migrations/
+        run: flake8 app/ --max-line-length=120 --exclude=app/trading/migrations/,app/test_env/
+
+      - name: Enable TimescaleDB extension
+        run: PGPASSWORD=testpassword psql -h localhost -U postgres -d tradingbot -c "CREATE EXTENSION IF NOT EXISTS timescaledb CASCADE;"
 
       - name: Test with coverage
         working-directory: app

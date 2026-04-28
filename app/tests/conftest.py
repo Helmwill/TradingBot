@@ -51,4 +51,3 @@ def backtest_fixture_df():
         'volume': rng.uniform(500, 5000, n),
     })
 
-

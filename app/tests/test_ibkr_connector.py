@@ -5,7 +5,7 @@ All tests run in stub mode — no live IB Gateway connection is ever made.
 """
 import pytest
 import pandas as pd
-from trading.broker.ibkr import IBKRConnector, IBKRError
+from trading.broker.ibkr import IBKRConnector
 
 
 @pytest.fixture

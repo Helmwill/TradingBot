@@ -81,7 +81,6 @@ def test_historical_data_returns_bars():
 @patch('trading.views.IBKRConnector')
 def test_current_prices_returns_price(mock_connector_class):
     import pandas as pd
-    import numpy as np
     mock_connector = MagicMock()
     mock_connector.get_bars.return_value = pd.DataFrame({
         'timestamp': pd.date_range('2025-01-01', periods=5, freq='1min'),
