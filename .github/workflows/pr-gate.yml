@@ -7,9 +7,77 @@ on:
       - dev
 
 jobs:
-  gauntlet:
-    uses: Helmwill/DevOps-Platform/.github/workflows/pr-gate.yml@main
-    with:
-      image_name: tradingbot
-      coverage_threshold: 80
-    secrets: inherit
+  test:
+    runs-on: ubuntu-latest
+    services:
+      timescaledb:
+        image: timescale/timescaledb:latest-pg16
+        env:
+          POSTGRES_PASSWORD: testpassword
+          POSTGRES_DB: tradingbot
+          POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint
+        run: flake8 app/ --max-line-length=120 --exclude=app/trading/migrations/
+
+      - name: Test with coverage
+        working-directory: app
+        env:
+          DJANGO_SECRET_KEY: ci-not-a-real-secret
+          DB_HOST: localhost
+          DB_PORT: 5432
+          DB_NAME: tradingbot
+          DB_USER: postgres
+          DB_PASSWORD: testpassword
+          REDIS_URL: redis://localhost:6379/0
+        run: pytest --cov=. --cov-report=xml --cov-fail-under=80
+
+      - name: Upload coverage
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: app/coverage.xml
+
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t tradingbot:test .
+
+      - name: Trivy vulnerability scan
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: tradingbot:test
+          format: table
+          exit-code: '1'
+          ignore-unfixed: true
+          severity: CRITICAL,HIGH

@@ -8,10 +8,46 @@ on:
       - completed
 
 jobs:
-  deploy:
+  build-push:
+    runs-on: ubuntu-latest
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    uses: Helmwill/DevOps-Platform/.github/workflows/deploy-prod.yml@main
-    with:
-      image_name: tradingbot
-      smoke_script: scripts/smoke.sh
-    secrets: inherit
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Log in to registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASSWORD }}
+
+      - name: Retag qa image as latest
+        run: |
+          docker pull ghcr.io/${{ secrets.REGISTRY_USER }}/tradingbot:qa
+          docker tag ghcr.io/${{ secrets.REGISTRY_USER }}/tradingbot:qa ghcr.io/${{ secrets.REGISTRY_USER }}/tradingbot:latest
+          docker push ghcr.io/${{ secrets.REGISTRY_USER }}/tradingbot:latest
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-push
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Deploy to VPS (prod)
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+            docker network create platform-net 2>/dev/null || true
+            cd /opt/tradingbot
+            docker compose pull tradingbot celery-worker celery-beat
+            ENVIRONMENT=production docker compose up -d tradingbot celery-worker celery-beat
+            sleep 10
+            SMOKE_BASE_URL=http://localhost:8000 bash scripts/smoke.sh
