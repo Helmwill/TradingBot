@@ -49,7 +49,7 @@ jobs:
           script: |
             set -e
             docker network create platform-net 2>/dev/null || true
-            cd /opt/tradingbot
+            cd ~/srv/projects/TradingBot
             git pull origin dev
             docker compose pull tradingbot celery-worker celery-beat
             ENVIRONMENT=test docker compose up -d tradingbot celery-worker celery-beat
