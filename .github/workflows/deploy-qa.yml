@@ -50,7 +50,7 @@ jobs:
             set -e
             docker network create platform-net 2>/dev/null || true
             cd ~/srv/projects/TradingBot
-            git pull origin dev
+            git fetch origin dev && git reset --hard origin/dev
             docker compose pull tradingbot celery-worker celery-beat
             ENVIRONMENT=test docker compose up -d tradingbot celery-worker celery-beat
             sleep 15
